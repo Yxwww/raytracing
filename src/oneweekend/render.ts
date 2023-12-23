@@ -1,13 +1,18 @@
 console.log('main.js')
 const image_width = 256;
 const image_height = 256;
-const contents = [
-  `P3`,
-  `${image_width} ${image_height}`,
-  `255`,
-];
+// const log = console.log
+// const contents = [
+//   `P3`,
+//   `${image_width} ${image_height}`,
+//   `255`,
+// ];
 
 export async function run(canvas: HTMLCanvasElement) {
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('2d context not found');
 
   for (let j = 0; j < image_height; j++) {
     for (let i = 0; i < image_width; i++) {
@@ -19,7 +24,9 @@ export async function run(canvas: HTMLCanvasElement) {
       const g = 255.999 * gn;
       const b = 255.999 * bn;
 
-      contents.push(`${r} ${g} ${b}`);
+
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
+      ctx.fillRect(i, j, 1, 1);
     }
   }
 }
