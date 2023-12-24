@@ -17,7 +17,7 @@ export function raf(callback: () => void) {
 
 
 export function wait(frames = 0) {
-  return new Promise<void>((res, rej)=>{
+  return new Promise<void>((res)=>{
     let count = 0 
     const cancel = raf(() => {
       if (count === frames) {
