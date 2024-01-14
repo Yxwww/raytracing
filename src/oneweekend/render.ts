@@ -3,6 +3,45 @@ const RATIO = 16 / 9;
 const CANVAS_HEIGHT = 300;
 const CANVAS_WIDTH = Math.floor(CANVAS_HEIGHT * RATIO);
 
+function createhitrecord({p, normal, t}: {p: Vector3, normal: Vector3, t: number}) { 
+  return {
+    p, normal, t,
+  }
+}
+function createSphere({ center, radius }: {
+  center: Vector3,
+  radius: number
+}) {
+  const sphere = new Sphere(center, radius)
+  return {
+    hit(ray: Ray, [ray_tmin, ray_tmax]: [number, number] ) {
+      const oc = ray.origin.clone().sub(sphere.center);
+      const a = ray.direction.clone().lengthSq()
+      const half_b = oc.dot(ray.direction);
+      const c = oc.lengthSq() - sphere.radius * sphere.radius;
+      const discriminant = half_b * half_b - a * c;
+      if (discriminant < 0) {
+        return false
+      }
+      const sqrtd = Math.sqrt(discriminant)
+      
+      // find the nearest root athat lines in the range
+      let root = (-half_b - sqrtd) / a;
+      if (root <= ray_tmin || ray_tmax <= root) {
+        root = (-half_b + sqrtd) / a
+        if (root<=ray_tmin || ray_tmax <=root) {
+          return false
+        }
+      }
+
+      const t = root;
+      const point = ray.at(root, new Vector3());
+      const normal = point.sub(sphere.center).divideScalar(sphere.radius)
+      return createhitrecord({t, p: point, normal})
+    }
+  }
+}
+
 function hitSphere(r: Ray, sphere: Sphere) {
   const oc = r.origin.clone().sub(sphere.center);
   const a = r.direction.clone().lengthSq()
@@ -36,13 +75,21 @@ function hitSphere(r: Ray, sphere: Sphere) {
 
 const spherePos = new Vector3(0, 0, -1);
 const sphere = new Sphere(spherePos.clone(), 0.5);
+const sph = createSphere({center: spherePos.clone(), radius: 0.5},)
 function computeRayColor(ray: Ray) {
   // NOTE: hitSphere approach
-  const t = hitSphere(ray, sphere);
-  if (t > 0) {
-    const {x, y, z} = ray.at(t, new Vector3()).sub(spherePos).normalize()
+  const record = sph.hit(ray, [0, 2])
+  if (record) {
+    const { normal} = record;
+    const {x, y, z} = normal;
     return new Color(x + 1, y + 1, z + 1).multiplyScalar(0.5)
   }
+
+  // const t = hitSphere(ray, sphere);
+  // if (t > 0) {
+  //   const { x, y, z } = ray.at(t, new Vector3()).sub(spherePos).normalize()
+  //   return new Color(x + 1, y + 1, z + 1).multiplyScalar(0.5)
+  // }
 
   // TODO: see how to get threejs intersectSphere works
   // if (intersectSphere(ray, sphere)) {
@@ -56,7 +103,7 @@ function computeRayColor(ray: Ray) {
 
   const normalizedDirection = ray.direction.clone().normalize();
   const a = 0.5 * (normalizedDirection.y + 1);
-  return new Color(1.0, 1.0, 1.0).multiplyScalar(1-a).add(new Color(0.5, 0.7, 1.0).multiplyScalar(a))
+  return new Color(1.0, 1.0, 1.0).multiplyScalar(1 - a).add(new Color(0.5, 0.7, 1.0).multiplyScalar(a))
 }
 
 export async function run(canvas: HTMLCanvasElement) {
@@ -77,7 +124,7 @@ export async function run(canvas: HTMLCanvasElement) {
       // const gn = j / (height - 1)
       // const bn = 0;
 
-      const {r: rn, g: gn, b: bn} = pixelColor;
+      const { r: rn, g: gn, b: bn } = pixelColor;
       const r = 255.999 * rn;
       const g = 255.999 * gn;
       const b = 255.999 * bn;
@@ -102,7 +149,7 @@ const pixel_delta_v = viewport_v.clone().divideScalar(CANVAS_HEIGHT);
 const viewport_upper_left = camera_center.clone().sub(new Vector3(0, 0, focal_length)).sub(viewport_u.divideScalar(2)).sub(viewport_v.divideScalar(2))
 const pixel00_loc = viewport_upper_left.clone().add(pixel_delta_u.clone().add(pixel_delta_v).multiplyScalar(0.5));
 
-console.log('camera coordinate\n', {pixel_delta_v, pixel_delta_u, pixel00_loc, viewport_width, viewport_height})
+console.log('camera coordinate\n', { pixel_delta_v, pixel_delta_u, pixel00_loc, viewport_width, viewport_height })
 
 
 // function setupViewPort(width: number, height: number) {
