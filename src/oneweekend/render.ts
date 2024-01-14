@@ -5,22 +5,33 @@ const CANVAS_WIDTH = Math.floor(CANVAS_HEIGHT * RATIO);
 
 function hitSphere(r: Ray, sphere: Sphere) {
   const oc = r.origin.clone().sub(sphere.center);
-  const a = r.direction.clone().dot(r.direction)
-  const b = 2 * oc.clone().dot(r.direction);
-  const c = oc.clone().dot(oc) - sphere.radius*sphere.radius;
-  const discriminant = b * b - 4 * a * c;
+  const a = r.direction.clone().lengthSq()
+  const half_b = oc.dot(r.direction);
+  const c = oc.lengthSq() - sphere.radius * sphere.radius;
+  const discriminant = half_b * half_b - a * c;
   if (discriminant < 0) {
-    return -1.0;
+    return -1
+  } else {
+    return (-half_b - Math.sqrt(discriminant)) / a
   }
-  return (-b - Math.sqrt(discriminant) ) / (2.0*a);
+  // const oc = r.origin.clone().sub(sphere.center);
+  // const a = r.direction.clone().dot(r.direction)
+  // const b = 2 * oc.clone().dot(r.direction);
+  // const c = oc.clone().dot(oc) - sphere.radius*sphere.radius;
+  // const discriminant = b * b - 4 * a * c;
+  // if (discriminant < 0) {
+  //   return -1.0;
+  // }
+  // return (-b - Math.sqrt(discriminant) ) / (2.0*a);
 }
-function intersectSphere(ray: Ray, sphere: Sphere) {
-  const result = ray.intersectsSphere(sphere)
-  // const intersection = ray.intersectSphere(sphere, new Vector3())
-  // console.log('intersectSphere', {ray, sphere, result, intersection})
-  // debugger
-  return result
-}
+
+// function intersectSphere(ray: Ray, sphere: Sphere) {
+//   const result = ray.intersectsSphere(sphere)
+//   // const intersection = ray.intersectSphere(sphere, new Vector3())
+//   // console.log('intersectSphere', {ray, sphere, result, intersection})
+//   // debugger
+//   return result
+// }
 
 
 const spherePos = new Vector3(0, 0, -1);
